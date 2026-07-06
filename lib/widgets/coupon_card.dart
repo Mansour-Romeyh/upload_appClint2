@@ -300,7 +300,7 @@ class _ApiCouponCardState extends State<ApiCouponCard> {
                     ),
                     child: Center(
                       child: Text(
-                        'تفعيل الخصم',
+                        'نسخ الكود',
                         style: AppTheme.tajawal(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,

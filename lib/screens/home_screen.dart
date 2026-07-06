@@ -1703,7 +1703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          'تفعيل الخصم',
+                          'نسخ الكود',
                           style: AppTheme.tajawal(
                             color: Colors.white,
                             fontSize: 11,
