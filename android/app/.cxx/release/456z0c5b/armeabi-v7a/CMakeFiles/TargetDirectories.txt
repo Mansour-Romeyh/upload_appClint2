@@ -1,0 +1,2 @@
+D:/coding/Abdel-nasser/discounts_app/android/app/.cxx/release/456z0c5b/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/coding/Abdel-nasser/discounts_app/android/app/.cxx/release/456z0c5b/armeabi-v7a/CMakeFiles/rebuild_cache.dir

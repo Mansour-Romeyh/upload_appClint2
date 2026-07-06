@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "837515316023",
+    "project_id": "couponey-fcm-a7d2b",
+    "storage_bucket": "couponey-fcm-a7d2b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:837515316023:android:4f336c52995ee8f865e8b2",
+        "android_client_info": {
+          "package_name": "com.coupon.coupondiscount"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgNEWCMNe0tZRTObwuU1a66LMhHeom70w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

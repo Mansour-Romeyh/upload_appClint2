@@ -1,0 +1,2 @@
+D:/Freelance Work/coupon/discounts_app/android/app/.cxx/release/w3p6l1l6/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/Freelance Work/coupon/discounts_app/android/app/.cxx/release/w3p6l1l6/armeabi-v7a/CMakeFiles/rebuild_cache.dir

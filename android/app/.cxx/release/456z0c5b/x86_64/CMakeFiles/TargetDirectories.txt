@@ -1,0 +1,2 @@
+D:/coding/Abdel-nasser/discounts_app/android/app/.cxx/release/456z0c5b/x86_64/CMakeFiles/edit_cache.dir
+D:/coding/Abdel-nasser/discounts_app/android/app/.cxx/release/456z0c5b/x86_64/CMakeFiles/rebuild_cache.dir
