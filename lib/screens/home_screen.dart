@@ -156,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     setState(() => _selectedNavIndex = index);
-    if (index == 2) {
+    if (index == 3) {
       _loadFavorites();
     }
   }
@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: AppDrawer(
         site: _site,
         hero: _hero,
-        selectedIndex: _selectedNavIndex,
+        selectedIndex: _selectedNavIndex == 3 ? 2 : _selectedNavIndex,
         onNavigateToCoupons: () {
           Navigator.push(
             context,
@@ -576,7 +576,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ).then((result) {
             _loadFavorites();
             if (result is int) {
-              setState(() => _selectedNavIndex = result);
+              setState(() => _selectedNavIndex = result == 2 ? 3 : result);
             }
           });
         },
@@ -590,7 +590,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         onSelectTab: (index) {
           setState(() {
-            _selectedNavIndex = index;
+            _selectedNavIndex = index == 2 ? 3 : index;
           });
           if (index == 2) {
             _loadFavorites();
@@ -605,23 +605,15 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 65,
           child: FloatingActionButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => AllCouponsScreen(coupons: _coupons),
-                ),
-              ).then((result) {
-                _loadFavorites();
-                if (result is int) {
-                  setState(() => _selectedNavIndex = result);
-                }
+              setState(() {
+                _selectedNavIndex = 2; // Switch to Tools tab
               });
             },
-            backgroundColor: const Color(0xFFFF485A),
+            backgroundColor: _selectedNavIndex == 2 ? const Color(0xFFFF485A) : AppTheme.primary,
             elevation: 8,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
             child: const Icon(
-              Icons.local_offer_rounded,
+              Icons.widgets_rounded,
               color: Colors.white,
               size: 32,
             ),
@@ -638,6 +630,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildHomeTab(),
             _buildStoresTab(),
+            _buildToolsTab(),
             _buildFavoritesTab(),
           ],
         ),
@@ -792,7 +785,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ).then((result) {
                       _loadFavorites();
                       if (result is int) {
-                        setState(() => _selectedNavIndex = result);
+                        setState(() => _selectedNavIndex = result == 2 ? 3 : result);
                       }
                     });
                   },
@@ -933,7 +926,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ).then((result) {
                 _loadFavorites();
                 if (result is int) {
-                  setState(() => _selectedNavIndex = result);
+                  setState(() => _selectedNavIndex = result == 2 ? 3 : result);
                 }
               });
             }
@@ -975,7 +968,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ).then((result) {
             _loadFavorites();
             if (result is int) {
-              setState(() => _selectedNavIndex = result);
+              setState(() => _selectedNavIndex = result == 2 ? 3 : result);
             }
           });
         }
@@ -1477,7 +1470,6 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         else ...[
           SliverToBoxAdapter(child: _buildHorizontalStoresCircleList()),
-          SliverToBoxAdapter(child: _buildToolsHubSection()),
           SliverToBoxAdapter(child: _buildFeaturedSection()),
           SliverToBoxAdapter(child: _buildTopCouponsSection()),
           SliverToBoxAdapter(child: _buildTopStoresSection()),
@@ -1768,7 +1760,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ).then((result) {
             _loadFavorites();
             if (result is int) {
-              setState(() => _selectedNavIndex = result);
+              setState(() => _selectedNavIndex = result == 2 ? 3 : result);
             }
           });
         }),
@@ -2257,6 +2249,247 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _buildToolsTab() {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        _buildAppBar(),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                  ),
+                  child: Text(
+                    'أدوات التوفير الذكية',
+                    style: AppTheme.tajawal(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textSecondaryinWhite,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Tool 1: Savings Calculator Card
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SavingsCalculatorScreen()),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE65100), Color(0xFFFF9800)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.calculate_rounded, color: Colors.white, size: 36),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'حاسبة التوفير الذكية',
+                                style: AppTheme.tajawal(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'احسب قيمة الخصومات والنسب مئوية والوفر الفعلي لمنتجاتك فورياً مع سجل للعمليات.',
+                                style: AppTheme.tajawal(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Tool 2: Submit Coupon Card
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SubmitCouponScreen()),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF00796B), Color(0xFF00BFA5)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.teal.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.add_moderator_rounded, color: Colors.white, size: 36),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'شارك واقترح كوبون خصم',
+                                style: AppTheme.tajawal(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'ساهم في نشر أكواد التوفير وشاركها مع المجتمع لتحصل على تفاعل وتقييمات إيجابية.',
+                                style: AppTheme.tajawal(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Tool 3: All Coupons
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AllCouponsScreen(coupons: _coupons)),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFC2185B), Color(0xFFEC407A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.pink.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.local_offer_rounded, color: Colors.white, size: 36),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'تصفح جميع الكوبونات',
+                                style: AppTheme.tajawal(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'شاهد تشكيلة كاملة من كوبونات الخصم المفعلة والمحدثة يومياً لجميع الماركات.',
+                                style: AppTheme.tajawal(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
