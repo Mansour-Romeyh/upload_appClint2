@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/theme.dart';
 import 'dashed_border.dart';
+import '../services/remote_config_service.dart';
 
 
 class ApiCouponCard extends StatefulWidget {
@@ -166,7 +167,7 @@ class _ApiCouponCardState extends State<ApiCouponCard> {
     }
 
     // ✅ افتح الموقع جوه التطبيق
-    if (widget.coupon.storeUrl.isNotEmpty && mounted) {
+    if (!RemoteConfigService.isReviewMode && widget.coupon.storeUrl.isNotEmpty && mounted) {
       await Future.delayed(const Duration(milliseconds: 600));
       if (mounted) {
         _launch(widget.coupon.storeUrl);

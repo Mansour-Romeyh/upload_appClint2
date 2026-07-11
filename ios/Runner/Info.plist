@@ -66,6 +66,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to your camera to scan coupons and barcodes for quick discount lookup.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to select coupon images for sharing.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

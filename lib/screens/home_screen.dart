@@ -22,6 +22,8 @@ import 'savings_calculator_screen.dart';
 import 'submit_coupon_screen.dart';
 import 'spin_wheel_screen.dart';
 import '../services/notification_service.dart';
+import '../services/remote_config_service.dart';
+import '../widgets/review_store_view.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -593,6 +595,16 @@ class _HomeScreenState extends State<HomeScreen> {
   // }
 
   Future<void> _launch(String url) async {
+    if (RemoteConfigService.isReviewMode) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('تم نسخ الرابط بنجاح! 🔗', style: AppTheme.tajawal(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: AppTheme.primary,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+      return;
+    }
     try {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     } catch (_) {}
@@ -647,15 +659,26 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 65,
           child: FloatingActionButton(
             onPressed: () {
-              setState(() {
-                _selectedNavIndex = 2; // Switch to Tools tab
-              });
+              if (RemoteConfigService.isReviewMode) {
+                setState(() {
+                  _selectedNavIndex = 2; // Switch to Tools tab
+                });
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TopOffersScreen(coupons: _coupons),
+                  ),
+                );
+              }
             },
-            backgroundColor: _selectedNavIndex == 2 ? const Color(0xFFFF485A) : AppTheme.primary,
+            backgroundColor: (RemoteConfigService.isReviewMode && _selectedNavIndex == 2)
+                ? const Color(0xFFFF485A)
+                : AppTheme.primary,
             elevation: 8,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-            child: const Icon(
-              Icons.widgets_rounded,
+            child: Icon(
+              RemoteConfigService.isReviewMode ? Icons.widgets_rounded : Icons.local_offer_rounded,
               color: Colors.white,
               size: 32,
             ),
@@ -688,27 +711,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildOfflineBanner() {
-    if (!ApiService.isOfflineMode) return const SizedBox();
-    return Container(
-      width: double.infinity,
-      color: const Color(0xFF555555),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 18),
-          const SizedBox(width: 8),
-          Text(
-            'أنت تتصفح الكوبونات المحفوظة حالياً دون اتصال بالإنترنت',
-            style: AppTheme.tajawal(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox();
   }
 
   Widget _buildLoading() => Scaffold(
@@ -1532,6 +1535,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeTab() {
+    if (RemoteConfigService.isReviewMode) {
+      return const ReviewStoreView();
+    }
     return CustomScrollView(
       controller: _mainScrollController,
       physics: const AlwaysScrollableScrollPhysics(),

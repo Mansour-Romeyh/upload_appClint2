@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/coupon.dart';
 import '../widgets/coupon_card.dart';
 import '../utils/theme.dart';
+import '../services/remote_config_service.dart';
 
 class TopOffersScreen extends StatefulWidget {
   final List<Coupon> coupons;
@@ -280,7 +281,7 @@ class _TopOffersScreenState extends State<TopOffersScreen> {
         }
 
         // 2. فتح رابط المتجر
-        if (coupon.storeUrl.isNotEmpty && mounted) {
+        if (!RemoteConfigService.isReviewMode && coupon.storeUrl.isNotEmpty && mounted) {
           await Future.delayed(const Duration(milliseconds: 600));
           if (mounted) {
             try {

@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'services/notification_service.dart';
+import 'services/remote_config_service.dart';
 import 'cubits/auth/auth_cubit.dart';
 import 'cubits/profile/profile_cubit.dart';
 import 'screens/auth/auth_gate.dart';
@@ -20,6 +21,7 @@ void main() async {
 
   // ── Firebase Initialization ───────────────────────────
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await RemoteConfigService.initialize();
   await NotificationService.initialize();
   await NotificationService.subscribeToTopic('new_coupons');
 
