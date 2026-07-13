@@ -30,7 +30,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDgNEWCMNe0tZRTObwuU1a66LMhHeom70w',
-    appId: '1:837515316023:android:4f336c52995ee8f865e8b2',
+    appId: '1:837515316023:android:96eed9d8f3b9991565e8b2',
     messagingSenderId: '837515316023',
     projectId: 'couponey-fcm-a7d2b',
     storageBucket: 'couponey-fcm-a7d2b.firebasestorage.app',
@@ -38,10 +38,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyA0b8Ew9k_2MbXM_FXs2KblvE2YTDm1aCE',
-    appId: '1:837515316023:ios:e6e61da145ba7eb465e8b2',
+    appId: '1:837515316023:ios:0ab7f3f2c55d98ca65e8b2',
     messagingSenderId: '837515316023',
     projectId: 'couponey-fcm-a7d2b',
     storageBucket: 'couponey-fcm-a7d2b.firebasestorage.app',
-    iosBundleId: 'com.coupon.coupondiscount',
+    iosBundleId: 'com.coupon.coupondiscountapp',
   );
+
 }

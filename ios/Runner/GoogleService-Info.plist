@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.coupon.coupondiscount</string>
+	<string>com.coupon.coupondiscountapp</string>
 	<key>PROJECT_ID</key>
 	<string>couponey-fcm-a7d2b</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true/>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:837515316023:ios:e6e61da145ba7eb465e8b2</string>
+	<string>1:837515316023:ios:0ab7f3f2c55d98ca65e8b2</string>
 </dict>
 </plist>

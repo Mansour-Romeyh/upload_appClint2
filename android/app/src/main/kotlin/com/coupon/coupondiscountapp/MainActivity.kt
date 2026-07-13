@@ -1,4 +1,4 @@
-package com.coupon.coupondiscount
+package com.coupon.coupondiscountapp
 
 import io.flutter.embedding.android.FlutterActivity
 
