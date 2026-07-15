@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/coupon.dart';
 import '../utils/theme.dart';
+import '../services/remote_config_service.dart';
 
 class SpinWheelScreen extends StatefulWidget {
   final List<Coupon> coupons;
@@ -96,6 +97,62 @@ class _SpinWheelScreenState extends State<SpinWheelScreen>
   }
 
   void _matchRealCoupons() {
+    if (RemoteConfigService.isReviewMode) {
+      final List<Map<String, dynamic>> reviewTips = [
+        {
+          'label': 'نصيحة الميزانية',
+          'tip': 'حدد ميزانية شهرية للمشتريات والتزم بها لتتجنب النفقات الزائدة.',
+          'isCoupon': false,
+          'color': const Color(0xFFFFB300)
+        },
+        {
+          'label': 'نصيحة المقارنة',
+          'tip': 'قارن الأسعار بين المتاجر المختلفة قبل إتمام الشراء لتضمن التوفير الفعلي.',
+          'isCoupon': false,
+          'color': const Color(0xFFE040FB)
+        },
+        {
+          'label': 'نصيحة التتبع',
+          'tip': 'قم بتسجيل مشترياتك في حاسبة التوفير لمراقبة نمو مدخراتك باستمرار.',
+          'isCoupon': false,
+          'color': const Color(0xFF00E676)
+        },
+        {
+          'label': 'نصيحة الانتظار',
+          'tip': 'تجنب الشراء الاندفاعي؛ انتظر 24 ساعة قبل شراء أي منتج غير ضروري.',
+          'isCoupon': false,
+          'color': const Color(0xFF00B0FF)
+        },
+        {
+          'label': 'نصيحة القوائم',
+          'tip': 'اكتب قائمة مشترياتك قبل الذهاب للتسوق واشترِ فقط ما هو مدون فيها.',
+          'isCoupon': false,
+          'color': const Color(0xFFFF3D00)
+        },
+        {
+          'label': 'نصيحة البدائل',
+          'tip': 'ابحث عن بدائل محلية للمنتجات ذات الأسعار المرتفعة للتوفير الفعال.',
+          'isCoupon': false,
+          'color': const Color(0xFFEC407A)
+        },
+        {
+          'label': 'نصيحة الكاش باك',
+          'tip': 'استغل عروض الشحن المجاني والبطاقات الائتمانية التي توفر كاش باك على المشتريات.',
+          'isCoupon': false,
+          'color': const Color(0xFF29B6F6)
+        },
+        {
+          'label': 'نصيحة المواسم',
+          'tip': 'تسوق في مواسم التخفيضات الكبرى واشترِ المنتجات الموسمية خارج وقت ذروتها.',
+          'isCoupon': false,
+          'color': const Color(0xFFAB47BC)
+        },
+      ];
+      _wheelItems.clear();
+      _wheelItems.addAll(reviewTips);
+      return;
+    }
+
     if (widget.coupons.isEmpty) return;
     int wheelCouponIdx = 0;
     for (int i = 0; i < _wheelItems.length; i++) {

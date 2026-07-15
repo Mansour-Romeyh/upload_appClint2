@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:discounts_app/screens/in_app_webview_screen.dart';
 import 'package:discounts_app/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
@@ -211,6 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadData();
     _loadFavorites();
     _loadNotificationPreference();
+    _loadChecklist();
     _bannerTimer = Timer.periodic(const Duration(milliseconds: 2500), (_) {
       if (mounted) {
         setState(
@@ -2162,7 +2164,381 @@ class _HomeScreenState extends State<HomeScreen> {
     return '🌐';
   }
 
+  // ─── Review Mode Tools ──────────────────────────────────────────────
+  List<Map<String, dynamic>> _checklist = [];
+  final _checklistController = TextEditingController();
+
+  Future<void> _loadChecklist() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final str = prefs.getString('review_shopping_checklist');
+      if (str != null) {
+        setState(() {
+          _checklist = List<Map<String, dynamic>>.from(jsonDecode(str));
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveChecklist() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('review_shopping_checklist', jsonEncode(_checklist));
+    } catch (_) {}
+  }
+
+  void _addChecklistItem() {
+    final text = _checklistController.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _checklist.add({
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'title': text,
+        'done': false,
+      });
+      _checklistController.clear();
+    });
+    _saveChecklist();
+  }
+
+  void _toggleChecklistItem(String id) {
+    setState(() {
+      final idx = _checklist.indexWhere((item) => item['id'] == id);
+      if (idx >= 0) {
+        _checklist[idx]['done'] = !_checklist[idx]['done'];
+      }
+    });
+    _saveChecklist();
+  }
+
+  void _deleteChecklistItem(String id) {
+    setState(() {
+      _checklist.removeWhere((item) => item['id'] == id);
+    });
+    _saveChecklist();
+  }
+
+  Widget _buildReviewArticlesTab() {
+    final List<Map<String, String>> articles = [
+      {
+        'title': 'كيف تخطط لميزانية تسوق ذكية؟ 📈',
+        'desc': 'تعلم كيفية تحديد احتياجاتك بدقة ووضع سقف مالي للتسوق لتجنب النفقات الزائدة.',
+        'content': '''التسوق الذكي يبدأ دائماً بالتخطيط. إليك خطوات وضع ميزانية تسوق ناجحة:
+
+1. تحديد سقف الإنفاق: قبل الخروج للتسوق أو تصفح المتاجر، حدد المبلغ الأقصى الذي يمكنك إنفاقه دون التأثير على التزاماتك الأخرى.
+2. إعداد قائمة صارمة: اكتب فقط ما تحتاجه فعلياً. تجنب إضافة أي منتج آخر لمجرد أنه يبدو جذاباً أو عليه خصم.
+3. التمييز بين الحاجات والرغبات: اسأل نفسك دائماً "هل أحتاج هذا المنتج أم أريده فقط؟"
+4. تقسيم الميزانية: قسم ميزانيتك الشهرية إلى فئات واضحة (أغذية، ملابس، أدوات، ترفيه) والتزم بحدود كل فئة.
+5. استخدام التطبيقات الرقمية: قم بتسجيل وتتبع كل عملية شراء لتعرف أين تذهب أموالك بدقة.'''
+      },
+      {
+        'title': 'قاعدة الـ 24 ساعة لتفادي الشراء الاندفاعي ⏳',
+        'desc': 'أفضل طريقة للتحكم في الرغبة المفاجئة للشراء والتوفير على المدى الطويل.',
+        'content': '''هل شعرت يوماً بالندم بعد شراء منتج ما؟ الشراء الاندفاعي هو العدو الأول للتوفير. للتخلص منه، طبق قاعدة الـ 24 ساعة:
+
+1. التريث والانتظار: عندما تجد منتجاً يعجبك وتريد شراءه فوراً، انتظر لمدة 24 ساعة كاملة قبل إتمام الدفع.
+2. التفكير العقلاني: خلال هذه الفترة، ستنخفض الحماسة العاطفية للمنتج وستتمكن من تقييم حاجتك الحقيقية له بموضوعية.
+3. دراسة البدائل: فكر في بدائل متوفرة لديك أو خيارات أقل سعراً.
+4. اتخاذ القرار: في معظم الحالات، ستجد أنك نسيت المنتج أو لم تعد مهتماً بشرائه، مما يوفر عليك مبالغ مالية كبيرة.'''
+      },
+      {
+        'title': 'أهمية تتبع الفواتير والمدخرات 🧾',
+        'desc': 'تتبع نفقاتك هو الخطوة الأساسية للوصول إلى الحرية المالية وتحقيق أهداف التوفير.',
+        'content': '''الوعي المالي يبدأ بمعرفة أين تذهب أموالك. إليك لماذا يجب عليك تتبع فواتيرك ومدخراتك:
+
+1. كشف النفقات المخفية: كتابة كل ريال تنفقه يساعدك على اكتشاف النفقات الصغيرة غير الضرورية التي تتراكم لتصبح مبالغ ضخمة.
+2. الحفاظ على الميزانية: تتبع النفقات يبقيك على علم بالحد المتبقي من ميزانيتك، ويمنعك من تخطيها.
+3. قياس معدل التوفير: عند مقارنة نفقاتك بمدخراتك، ستتمكن من رؤية مدى تقدمك نحو تحقيق أهدافك المالية.
+4. تحسين السلوك الاستهلاكي: رؤية الأرقام والرسومات البيانية بوضوح تمنحك دافعاً نفسياً لتقليل الإنفاق والتوفير الذكي.'''
+      },
+      {
+        'title': 'دليل التسوق في مواسم التخفيضات 🛍️',
+        'desc': 'كيف تستغل العروض والتخفيضات الكبرى للحصول على أفضل قيمة مقابل السعر.',
+        'content': '''مواسم التخفيضات فرصة ممتازة لتوفير المال، بشرط التعامل معها بذكاء:
+
+1. تتبع الأسعار مسبقاً: قد تقوم بعض المتاجر برفع الأسعار قبل موسم التخفيضات ثم خفضها لتبدو كأنها عرض كبير. راقب أسعار المنتجات التي تريدها قبل الموسم بأسابيع.
+2. مقارنة الأسعار: لا تشترِ من أول متجر تراه؛ استخدم حاسبة التوفير لمقارنة فروق الأسعار والنسب بين المتاجر.
+3. الشراء بالجملة للمنتجات الأساسية: بعض السلع غير القابلة للتلف تكون أوفر بكثير عند شرائها بكميات في مواسم العروض.
+4. حدد ميزانية محددة للتخفيضات: لا تدع كثرة العروض تغريك بتجاوز قدرتك المالية الحقيقية.'''
+      },
+    ];
+
+    return Container(
+      color: const Color(0xFFF9F9F9),
+      child: CustomScrollView(
+        slivers: [
+          _buildAppBar(),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFEBEBEB), width: 1),
+                    ),
+                    child: Text(
+                      'أدلة وإرشادات التسوق الذكي 📚',
+                      style: AppTheme.tajawal(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final article = articles[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 3,
+                    shadowColor: Colors.black.withOpacity(0.04),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => _showArticleDetails(article),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                index == 0 ? Icons.trending_up_rounded :
+                                index == 1 ? Icons.hourglass_empty_rounded :
+                                index == 2 ? Icons.receipt_long_rounded :
+                                Icons.shopping_bag_outlined,
+                                color: AppTheme.primary,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    article['title']!,
+                                    style: AppTheme.tajawal(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: Colors.grey.shade800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    article['desc']!,
+                                    style: AppTheme.tajawal(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade600,
+                                      height: 1.4,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                childCount: articles.length,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showArticleDetails(Map<String, String> article) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            builder: (context, scrollController) {
+              return Container(
+                padding: const EdgeInsets.all(24),
+                child: ListView(
+                  controller: scrollController,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      article['title']!,
+                      style: AppTheme.tajawal(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Text(
+                      article['content']!,
+                      style: AppTheme.tajawal(
+                        fontSize: 14,
+                        color: Colors.grey.shade800,
+                        height: 1.8,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReviewChecklistTab() {
+    return Container(
+      color: const Color(0xFFF9F9F9),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: Colors.white,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _checklistController,
+                    decoration: InputDecoration(
+                      hintText: 'إضافة منتج أو خطة شراء...',
+                      hintStyle: AppTheme.tajawal(color: Colors.grey, fontSize: 13),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    style: AppTheme.tajawal(fontSize: 14),
+                    onSubmitted: (_) => _addChecklistItem(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: _addChecklistItem,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _checklist.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.playlist_add_rounded, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text(
+                          'قائمة التسوق فارغة. ابدأ بإضافة منتجات!',
+                          style: AppTheme.tajawal(color: Colors.grey.shade600, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _checklist.length,
+                    itemBuilder: (context, index) {
+                      final item = _checklist[index];
+                      final isDone = item['done'] as bool;
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 2,
+                        shadowColor: Colors.black.withOpacity(0.03),
+                        child: ListTile(
+                          leading: Checkbox(
+                            value: isDone,
+                            activeColor: AppTheme.accent,
+                            onChanged: (_) => _toggleChecklistItem(item['id']),
+                          ),
+                          title: Text(
+                            item['title'],
+                            style: AppTheme.tajawal(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              decoration: isDone ? TextDecoration.lineThrough : null,
+                              color: isDone ? Colors.grey : Colors.black87,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                            onPressed: () => _deleteChecklistItem(item['id']),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStoresTab() {
+    if (RemoteConfigService.isReviewMode) {
+      return _buildReviewArticlesTab();
+    }
     return Container(
       color: const Color(0xFFF9F9F9),
       child: CustomScrollView(
@@ -2328,6 +2704,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFavoritesTab() {
+    if (RemoteConfigService.isReviewMode) {
+      return _buildReviewChecklistTab();
+    }
     final favoriteCoupons = _coupons.where((c) => _favoriteCouponIds.contains(c.id)).toList();
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),

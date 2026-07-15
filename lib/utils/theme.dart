@@ -3,29 +3,29 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static const Color background = Color(0xFFFFFFFF);
-  static const Color surface = Color(0xFF1A1A1A);
-  static const Color cardBg = Color(0xFF1E1E1E);
-  static const Color cardBorder = Color(0xFF2A2A2A);
+  static const Color surface = Color(0xFF1E1B4B); // Dark indigo surface
+  static const Color cardBg = Color(0xFFFFFFFF);
+  static const Color cardBorder = Color(0xFFE5E7EB);
 
-  static const Color primary = Color.fromARGB(255, 255, 157, 0);
-  static const Color primaryLight = Color(0xFFFFC107);
-  static const Color secondary = Color(0xFFFFD700);
-  static const Color accent = Color(0xFF00C853);
+  static const Color primary = Color(0xFF4F46E5); // Indigo
+  static const Color primaryLight = Color(0xFF818CF8);
+  static const Color secondary = Color(0xFF6366F1); // Medium Indigo
+  static const Color accent = Color(0xFF10B981); // Emerald Green
 
   static const Color textPrimary = Colors.black;
-  static const Color textSecondaryinBlack = Color.fromARGB(190, 158, 158, 158);
-  static const Color textSecondaryinWhite = Color.fromARGB(213, 84, 83, 83);
-  static const Color divider = Color(0xFF2A2A2A);
+  static const Color textSecondaryinBlack = Color.fromARGB(190, 100, 116, 139);
+  static const Color textSecondaryinWhite = Color.fromARGB(213, 71, 85, 105);
+  static const Color divider = Color(0xFFE2E8F0);
 
   static const Map<String, Color> badgeColors = {
-    'حصري': Color(0xFFFFD700),
-    'مميز': Color(0xFFFF6B35),
-    'جديد': Color(0xFF00C853),
+    'حصري': Color(0xFF4F46E5), // Indigo
+    'مميز': Color(0xFF10B981), // Emerald
+    'جديد': Color(0xFFF43F5E), // Rose/Pink
     'عرض خاص': Color(0xFFEF4444),
   };
 
   static const Map<String, Color> badgeTextColors = {
-    'حصري': Color(0xFF000000),
+    'حصري': Color(0xFFFFFFFF),
     'مميز': Color(0xFFFFFFFF),
     'جديد': Color(0xFFFFFFFF),
     'عرض خاص': Color(0xFFFFFFFF),

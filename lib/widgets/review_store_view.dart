@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/theme.dart';
+import '../screens/savings_calculator_screen.dart';
+import '../screens/spin_wheel_screen.dart';
 
 class ReviewStoreView extends StatefulWidget {
   const ReviewStoreView({super.key});
@@ -11,6 +15,9 @@ class ReviewStoreView extends StatefulWidget {
 class _ReviewStoreViewState extends State<ReviewStoreView> {
   String _selectedCategory = 'الكل';
   final List<Map<String, dynamic>> _cart = [];
+  double _totalSaved = 0.0;
+  double _savingsGoal = 1000.0;
+  int _historyCount = 0;
 
   final List<Map<String, dynamic>> _products = [
     {
@@ -72,6 +79,41 @@ class _ReviewStoreViewState extends State<ReviewStoreView> {
       'desc': 'تيشرت قطني 100% بتصميم عصري مريح يحمل شعار كوبوني الرسمي ومناسب للاستخدام اليومي.',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final historyStr = prefs.getString('savings_history');
+      final goalVal = prefs.getDouble('savings_goal') ?? 1000.0;
+      if (historyStr != null) {
+        final List<dynamic> decoded = jsonDecode(historyStr);
+        final history = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+        double total = 0.0;
+        for (var item in history) {
+          total += (item['savedAmount'] as num).toDouble();
+        }
+        setState(() {
+          _totalSaved = total;
+          _savingsGoal = goalVal;
+          _historyCount = history.length;
+        });
+      } else {
+        setState(() {
+          _savingsGoal = goalVal;
+          _historyCount = 0;
+          _totalSaved = 0.0;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading savings history in review: $e');
+    }
+  }
 
   List<Map<String, dynamic>> get _filteredProducts {
     if (_selectedCategory == 'الكل') return _products;
@@ -562,7 +604,7 @@ class _ReviewStoreViewState extends State<ReviewStoreView> {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(
-          'متجر كوبوني الإلكتروني',
+          'مساعد التوفير والتسوق الذكي',
           style: AppTheme.tajawal(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
         ),
         centerTitle: true,
@@ -595,170 +637,572 @@ class _ReviewStoreViewState extends State<ReviewStoreView> {
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          // Banner Section
-          SliverToBoxAdapter(
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: CustomScrollView(
+          slivers: [
+            // Dashboard Header & Stats (Savings Goal & Tracker Summary)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Column(
+                  children: [
+                    _buildStatsCardReview(),
+                    const SizedBox(height: 12),
+                    _buildGoalCardReview(),
+                    const SizedBox(height: 16),
+                    _buildQuickToolsRow(),
+                  ],
+                ),
+              ),
+            ),
+
+            // Banner Section
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFE53935), Color(0xFFFF7043)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'عروض الصيف الكبرى ☀️',
+                            style: AppTheme.tajawal(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'خصومات حصرية تصل إلى 25% على البطاقات والمستلزمات!',
+                            style: AppTheme.tajawal(color: Colors.white.withOpacity(0.9), fontSize: 12, height: 1.4),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.discount_rounded, color: Colors.white, size: 48),
+                  ],
+                ),
+              ),
+            ),
+
+            // Categories Selector
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 48,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: ['الكل', 'بطاقات رقمية', 'اشتراكات', 'ملحقات'].map((cat) {
+                    final isSelected = _selectedCategory == cat;
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: ChoiceChip(
+                        label: Text(
+                          cat,
+                          style: AppTheme.tajawal(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 13,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: AppTheme.primary,
+                        backgroundColor: Colors.white,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _selectedCategory = cat);
+                          }
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+
+            // Products Grid
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.8,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    final product = _filteredProducts[i];
+                    return Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 4,
+                      shadowColor: Colors.black.withOpacity(0.05),
+                      color: Colors.white,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => _showProductDetails(product),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: (product['color'] as Color).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(product['icon'] as IconData, size: 48, color: product['color'] as Color),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                product['title'] as String,
+                                style: AppTheme.tajawal(fontWeight: FontWeight.bold, fontSize: 13),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${product['price']} ر.س',
+                                        style: AppTheme.tajawal(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 14),
+                                      ),
+                                      if (product['oldPrice'] != null)
+                                        Text(
+                                          '${product['oldPrice']} ر.س',
+                                          style: AppTheme.tajawal(
+                                            fontSize: 10,
+                                            color: Colors.grey,
+                                            decoration: TextDecoration.lineThrough,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(8)),
+                                    child: IconButton(
+                                      constraints: const BoxConstraints(),
+                                      padding: const EdgeInsets.all(6),
+                                      icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.white, size: 16),
+                                      onPressed: () => _addToCart(product),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: _filteredProducts.length,
+                ),
+              ),
+            ),
+            const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsCardReview() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E1E24), Color(0xFF2E2E38)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'إجمالي التوفير الشخصي',
+                  style: AppTheme.tajawal(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${_totalSaved.toStringAsFixed(2)} ر.س',
+                  style: AppTheme.tajawal(
+                    color: AppTheme.accent,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.calculate_rounded, color: AppTheme.primary, size: 24),
+                const SizedBox(width: 8),
+                Column(
+                  children: [
+                    Text(
+                      'العمليات',
+                      style: AppTheme.tajawal(color: Colors.white60, fontSize: 10),
+                    ),
+                    Text(
+                      '$_historyCount',
+                      style: AppTheme.tajawal(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditGoalDialogReview() {
+    final controller = TextEditingController(text: _savingsGoal.toStringAsFixed(0));
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('تعديل هدف التوفير',
+            style: AppTheme.tajawal(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('حدد المبلغ المستهدف للتوفير بالريال:',
+                style: AppTheme.tajawal(fontSize: 13, color: Colors.grey.shade600)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                suffixText: 'ر.س',
+                suffixStyle: AppTheme.tajawal(color: Colors.grey),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('إلغاء',
+                style: AppTheme.tajawal(color: Colors.grey, fontSize: 14)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final val = double.tryParse(controller.text) ?? 0.0;
+              if (val > 0) {
+                setState(() {
+                  _savingsGoal = val;
+                });
+                try {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setDouble('savings_goal', val);
+                } catch (_) {}
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('حفظ',
+                style: AppTheme.tajawal(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGoalCardReview() {
+    final progressRatio = (_totalSaved / _savingsGoal).clamp(0.0, 1.0);
+    final percentage = (progressRatio * 100).toStringAsFixed(0);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEBEBEB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.track_changes_rounded, color: AppTheme.primary, size: 22),
+                  const SizedBox(width: 8),
+                  Text(
+                    'هدف التوفير المستهدف',
+                    style: AppTheme.tajawal(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                ],
+              ),
+              GestureDetector(
+                onTap: _showEditGoalDialogReview,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.edit_rounded, color: AppTheme.primary, size: 12),
+                      const SizedBox(width: 4),
+                      Text(
+                        'تعديل الهدف',
+                        style: AppTheme.tajawal(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'التقدم: $percentage%',
+                style: AppTheme.tajawal(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: progressRatio >= 1.0 ? Colors.green : Colors.grey.shade700,
+                ),
+              ),
+              Text(
+                '${_totalSaved.toStringAsFixed(0)} / ${_savingsGoal.toStringAsFixed(0)} ر.س',
+                style: AppTheme.tajawal(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 500),
+                    width: constraints.maxWidth * progressRatio,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.primary, AppTheme.primaryLight],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickToolsRow() {
+    return Row(
+      children: [
+        // Savings Calculator Card
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SavingsCalculatorScreen()),
+              ).then((_) => _loadHistory());
+            },
             child: Container(
-              margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFE53935), Color(0xFFFF7043)],
+                  colors: [Color(0xFFE65100), Color(0xFFFF9800)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.orange.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  )
+                ],
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'عروض الصيف الكبرى ☀️',
-                          style: AppTheme.tajawal(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'خصومات حصرية تصل إلى 25% على البطاقات والمستلزمات!',
-                          style: AppTheme.tajawal(color: Colors.white.withOpacity(0.9), fontSize: 12, height: 1.4),
-                        ),
-                      ],
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.calculate_outlined, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'حاسبة التوفير',
+                    style: AppTheme.tajawal(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.discount_rounded, color: Colors.white, size: 48),
+                  const SizedBox(height: 4),
+                  Text(
+                    'سجل نفقاتك ومقدار خصمك',
+                    style: AppTheme.tajawal(
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: 10,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-
-          // Categories Selector
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 48,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: ['الكل', 'بطاقات رقمية', 'اشتراكات', 'ملحقات'].map((cat) {
-                  final isSelected = _selectedCategory == cat;
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: ChoiceChip(
-                      label: Text(
-                        cat,
-                        style: AppTheme.tajawal(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          fontSize: 13,
-                        ),
-                      ),
-                      selected: isSelected,
-                      selectedColor: AppTheme.primary,
-                      backgroundColor: Colors.white,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setState(() => _selectedCategory = cat);
-                        }
-                      },
+        ),
+        const SizedBox(width: 12),
+        // Daily Tips Wheel Card
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SpinWheelScreen(coupons: [])),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF311B92), Color(0xFF673AB7)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.deepPurple.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  )
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
                     ),
-                  );
-                }).toList(),
+                    child: const Icon(Icons.tips_and_updates_outlined, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'نصيحة التوفير',
+                    style: AppTheme.tajawal(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'أدر عجلة النصائح اليومية',
+                    style: AppTheme.tajawal(
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-
-          // Products Grid
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.8,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, i) {
-                  final product = _filteredProducts[i];
-                  return Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 4,
-                    shadowColor: Colors.black.withOpacity(0.05),
-                    color: Colors.white,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => _showProductDetails(product),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: (product['color'] as Color).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(product['icon'] as IconData, size: 48, color: product['color'] as Color),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              product['title'] as String,
-                              style: AppTheme.tajawal(fontWeight: FontWeight.bold, fontSize: 13),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${product['price']} ر.س',
-                                      style: AppTheme.tajawal(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 14),
-                                    ),
-                                    if (product['oldPrice'] != null)
-                                      Text(
-                                        '${product['oldPrice']} ر.س',
-                                        style: AppTheme.tajawal(
-                                          fontSize: 10,
-                                          color: Colors.grey,
-                                          decoration: TextDecoration.lineThrough,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(8)),
-                                  child: IconButton(
-                                    constraints: const BoxConstraints(),
-                                    padding: const EdgeInsets.all(6),
-                                    icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.white, size: 16),
-                                    onPressed: () => _addToCart(product),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-                childCount: _filteredProducts.length,
-              ),
-            ),
-          ),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
