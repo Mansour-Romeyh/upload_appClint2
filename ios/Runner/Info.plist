@@ -70,6 +70,12 @@
 	<string>This app needs access to your camera to scan coupons and barcodes for quick discount lookup.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to select coupon images for sharing.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نحتاج إلى الوصول إلى موقعك لعرض الكوبونات والعروض القريبة منك.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>نحتاج إلى الوصول إلى موقعك لعرض الكوبونات والعروض القريبة منك.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>نحتاج إلى الوصول إلى موقعك لعرض الكوبونات والعروض القريبة منك.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
