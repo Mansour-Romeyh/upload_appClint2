@@ -24,7 +24,6 @@ dependencies:
   google_fonts: ^8.0.2
   http: ^1.2.0
   image_picker: ^1.2.1
-  motion: ^2.0.2
   shared_preferences: ^2.5.5
   shimmer: ^3.0.0
   show_up_animation: ^2.1.2

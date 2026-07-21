@@ -589,30 +589,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  motion:
-    dependency: "direct main"
-    description:
-      name: motion
-      sha256: f04b5dab1e212be8e0cc4aed4b68c4c7a43ac3b7343e91c39c5161b0cd61e7b3
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
-  motion_platform_interface:
-    dependency: transitive
-    description:
-      name: motion_platform_interface
-      sha256: "3c82dec2404be829980463490bdd171668619c4cff758060cb8f30d99981aeb6"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
-  motion_web:
-    dependency: transitive
-    description:
-      name: motion_web
-      sha256: "9608a2a825a555bb712fe09ff75cc183b11f2e68ba323262227f0f3b9026b66e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
   nested:
     dependency: transitive
     description:

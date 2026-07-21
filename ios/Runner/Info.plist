@@ -67,9 +67,9 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to your camera to scan coupons and barcodes for quick discount lookup.</string>
+	<string>يحتاج التطبيق إلى الوصول إلى الكاميرا لمسح الكوبونات والباركود للبحث السريع عن الخصومات.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs access to your photo library to select coupon images for sharing.</string>
+	<string>يحتاج التطبيق إلى الوصول إلى مكتبة الصور الخاصة بك لتحديد صور الكوبونات ومشاركتها.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نحتاج إلى الوصول إلى موقعك لعرض الكوبونات والعروض القريبة منك.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
