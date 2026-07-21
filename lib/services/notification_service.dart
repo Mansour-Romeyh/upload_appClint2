@@ -31,72 +31,107 @@ class NotificationService {
   // ─── Initialization ───────────────────────────────────────────
   static Future<void> initialize() async {
     // 1. Local notifications setup
-    const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    try {
+      const AndroidInitializationSettings androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+      const DarwinInitializationSettings iosSettings =
+          DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
 
-    await _localNotifications.initialize(
-      const InitializationSettings(
-        android: androidSettings,
-        iOS: iosSettings,
-      ),
-      onDidReceiveNotificationResponse: _onNotificationTap,
-    );
+      await _localNotifications.initialize(
+        const InitializationSettings(
+          android: androidSettings,
+          iOS: iosSettings,
+        ),
+        onDidReceiveNotificationResponse: _onNotificationTap,
+      );
+    } catch (e) {
+      debugPrint('❌ Error initializing local notifications: $e');
+    }
 
     // 2. Create Android channel
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(_channel);
+    try {
+      await _localNotifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(_channel);
+    } catch (e) {
+      debugPrint('❌ Error creating Android notification channel: $e');
+    }
 
     // 3. Firebase Messaging permissions
-    final messaging = FirebaseMessaging.instance;
-    await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-    );
+    FirebaseMessaging? messaging;
+    try {
+      messaging = FirebaseMessaging.instance;
+      await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
+    } catch (e) {
+      debugPrint('❌ Error requesting Firebase Messaging permissions: $e');
+    }
 
     // 4. Get & save token
-    try {
-      final token = await messaging.getToken();
-      debugPrint('📱 FCM Token: $token');
-      // TODO: أرسل الـ token للـ backend هنا لتسجيل الجهاز
-      // await sendTokenToBackend(token);
-    } catch (e) {
-      debugPrint('❌ Error getting FCM token: $e');
+    if (messaging != null) {
+      try {
+        final token = await messaging.getToken();
+        debugPrint('📱 FCM Token: $token');
+      } catch (e) {
+        debugPrint('❌ Error getting FCM token: $e');
+      }
     }
 
     // 5. Background handler
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    try {
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    } catch (e) {
+      debugPrint('❌ Error setting background message handler: $e');
+    }
 
     // 6. Foreground handler
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('📬 Foreground notification: ${message.notification?.title}');
-      _showLocalNotification(message);
-    });
+    try {
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        debugPrint('📬 Foreground notification: ${message.notification?.title}');
+        _showLocalNotification(message);
+      });
+    } catch (e) {
+      debugPrint('❌ Error setting foreground message listener: $e');
+    }
 
     // 7. Notification opened app (from background)
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint('🔔 Opened from notification: ${message.data}');
-      _handleNotificationData(message.data);
-    });
+    try {
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        debugPrint('🔔 Opened from notification: ${message.data}');
+        _handleNotificationData(message.data);
+      });
+    } catch (e) {
+      debugPrint('❌ Error setting message opened app listener: $e');
+    }
 
     // 8. Check if app opened from terminated state
-    final initialMessage = await messaging.getInitialMessage();
-    if (initialMessage != null) {
-      _handleNotificationData(initialMessage.data);
+    if (messaging != null) {
+      try {
+        final initialMessage = await messaging.getInitialMessage();
+        if (initialMessage != null) {
+          _handleNotificationData(initialMessage.data);
+        }
+      } catch (e) {
+        debugPrint('❌ Error checking initial message: $e');
+      }
     }
 
     // 9. Schedule daily local reminder
-    await scheduleDailyReminder();
+    try {
+      await scheduleDailyReminder();
+    } catch (e) {
+      debugPrint('❌ Error scheduling daily reminder: $e');
+    }
   }
 
   // ─── Schedule Daily Local Reminder ─────────────────────────────

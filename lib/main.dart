@@ -19,18 +19,47 @@ import 'utils/theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ── Firebase Initialization ───────────────────────────
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await RemoteConfigService.initialize();
-  await NotificationService.initialize();
-  await NotificationService.subscribeToTopic('new_coupons');
-
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
 
+  // 🚀 Call runApp IMMEDIATELY so the UI renders instantly on iOS/iPadOS
   runApp(const DiscountsApp());
+
+  // ── Safe Background Async Initializations ────────────────
+  // Run external services asynchronously without blocking runApp() or main thread
+  _initServicesAsync();
+}
+
+Future<void> _initServicesAsync() async {
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform)
+        .timeout(const Duration(seconds: 4));
+  } catch (e) {
+    debugPrint('❌ Firebase.initializeApp failed or timed out: $e');
+  }
+
+  try {
+    await RemoteConfigService.initialize()
+        .timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('❌ RemoteConfigService.initialize failed or timed out: $e');
+  }
+
+  try {
+    await NotificationService.initialize()
+        .timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('❌ NotificationService.initialize failed or timed out: $e');
+  }
+
+  try {
+    await NotificationService.subscribeToTopic('new_coupons')
+        .timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('❌ NotificationService.subscribeToTopic failed or timed out: $e');
+  }
 }
 
 class DiscountsApp extends StatelessWidget {

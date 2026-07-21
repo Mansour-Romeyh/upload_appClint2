@@ -6,9 +6,14 @@ class RemoteConfigService {
   
   /// القيمة الافتراضية false — الوضع العادي
   static bool get isReviewMode {
-    final val = _rc.getBool('review_mode');
-    print('[RemoteConfig] isReviewMode: $val');
-    return val;
+    try {
+      final val = _rc.getBool('review_mode');
+      print('[RemoteConfig] isReviewMode: $val');
+      return val;
+    } catch (e) {
+      print('[RemoteConfig] isReviewMode error fallback: $e');
+      return false;
+    }
   }
 
   static Future<void> initialize() async {
